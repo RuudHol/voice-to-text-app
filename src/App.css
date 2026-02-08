@@ -51,12 +51,28 @@
   font-size: 0.9rem;
 }
 
-.status.recording {
+.status.info {
   color: #f59e0b;
 }
 
-.status.saved {
-  color: #22c55e;
+.transcript-box {
+  margin-top: 16px;
+  padding: 12px;
+  background: #252535;
+  border-radius: 8px;
+}
+
+.transcript-box label {
+  display: block;
+  font-size: 0.85rem;
+  color: #888;
+  margin-bottom: 6px;
+}
+
+.transcript {
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.5;
 }
 
 .status.error {

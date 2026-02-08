@@ -5,14 +5,17 @@ import './App.css';
 function App() {
   const [recording, setRecording] = useState(false);
   const [error, setError] = useState('');
-  const [lastSaved, setLastSaved] = useState('');
+  const [status, setStatus] = useState('');
+  const [transcript, setTranscript] = useState('');
 
   const handleStart = async () => {
     setError('');
-    setLastSaved('');
+    setStatus('');
+    setTranscript('');
     try {
       await startRecording();
       setRecording(true);
+      setStatus('Opname bezig…');
     } catch (e) {
       setError(e.message || 'Microfoon niet beschikbaar of toegang geweigerd.');
     }
@@ -21,26 +24,42 @@ function App() {
   const handleStop = async () => {
     if (!recording) return;
     setError('');
+    setStatus('Opname opslaan…');
     try {
       const blob = await stopRecording();
       setRecording(false);
       if (!blob || blob.size === 0) {
-        setLastSaved('Geen audio opgenomen.');
+        setStatus('');
+        setError('Geen audio opgenomen.');
         return;
       }
       const arrayBuffer = await blob.arrayBuffer();
-      const path = await window.electronAPI.saveRecording(arrayBuffer);
-      setLastSaved(path ? 'Opname opgeslagen.' : 'Opslaan mislukt.');
+      const audioPath = await window.electronAPI.saveRecording(arrayBuffer);
+      if (!audioPath) {
+        setStatus('');
+        setError('Opslaan mislukt.');
+        return;
+      }
+      setStatus('Bezig met omzetten naar tekst…');
+      const result = await window.electronAPI.transcribe(audioPath);
+      if (result.ok) {
+        setTranscript(result.text || '(geen tekst herkend)');
+        setStatus('Klaar.');
+      } else {
+        setError(result.error || 'Transcriptie mislukt.');
+        setStatus('');
+      }
     } catch (e) {
       setRecording(false);
-      setError(e.message || 'Stoppen mislukt.');
+      setStatus('');
+      setError(e.message || 'Er is iets misgegaan.');
     }
   };
 
   return (
     <div className="app">
       <h1>Voice to Text</h1>
-      <p className="sub">Start opname, praat, stop — daarna volgt transcriptie.</p>
+      <p className="sub">Start opname, praat, stop — daarna wordt het omgezet naar tekst.</p>
 
       <div className="actions">
         {!recording ? (
@@ -54,8 +73,13 @@ function App() {
         )}
       </div>
 
-      {recording && <p className="status recording">Opname bezig…</p>}
-      {lastSaved && <p className="status saved">{lastSaved}</p>}
+      {status && <p className="status info">{status}</p>}
+      {transcript && (
+        <div className="transcript-box">
+          <label>Transcript:</label>
+          <p className="transcript">{transcript}</p>
+        </div>
+      )}
       {error && <p className="status error">{error}</p>}
     </div>
   );

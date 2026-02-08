@@ -5,11 +5,22 @@ const os = require('os');
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
+const { transcribeLocal } = require('./transcribe');
+
 ipcMain.handle('save-recording', async (_event, arrayBuffer) => {
   const tempDir = os.tmpdir();
   const filePath = path.join(tempDir, `voice-to-text-${Date.now()}.webm`);
   fs.writeFileSync(filePath, Buffer.from(arrayBuffer));
   return filePath;
+});
+
+ipcMain.handle('transcribe', async (_event, audioPath) => {
+  try {
+    const text = await transcribeLocal(audioPath);
+    return { ok: true, text };
+  } catch (e) {
+    return { ok: false, error: e.message || String(e) };
+  }
 });
 
 function createWindow() {
