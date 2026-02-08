@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+out/
+
+# Logs & cache
+*.log
+npm-debug.log*
+.cache/
+
+# OS
+.DS_Store
+Thumbs.db
+nul
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Env (als je later API keys gebruikt)
+.env
+.env.local
+.env.*.local
+
+# Electron
+*.exe
+*.dmg
+*.AppImage

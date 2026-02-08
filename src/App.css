@@ -1,0 +1,64 @@
+.app {
+  padding: 24px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.app h1 {
+  margin: 0 0 8px;
+  font-size: 1.5rem;
+}
+
+.sub {
+  color: #aaa;
+  margin: 0 0 24px;
+  font-size: 0.95rem;
+}
+
+.actions {
+  margin-bottom: 16px;
+}
+
+.btn {
+  padding: 12px 24px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-start {
+  background: #0d9488;
+  color: #fff;
+}
+
+.btn-start:hover {
+  background: #0f766e;
+}
+
+.btn-stop {
+  background: #dc2626;
+  color: #fff;
+}
+
+.btn-stop:hover {
+  background: #b91c1c;
+}
+
+.status {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+}
+
+.status.recording {
+  color: #f59e0b;
+}
+
+.status.saved {
+  color: #22c55e;
+}
+
+.status.error {
+  color: #ef4444;
+}
