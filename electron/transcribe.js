@@ -3,6 +3,8 @@ const os = require('os');
 const fs = require('fs');
 const ffmpegPath = require('ffmpeg-static');
 const ffmpeg = require('fluent-ffmpeg');
+const { cleanup } = require('./cleanup');
+const { polishWithOllama, isOllamaAvailable } = require('./llm-polish');
 
 if (ffmpegPath) ffmpeg.setFfmpegPath(ffmpegPath);
 
@@ -12,6 +14,7 @@ function webmToWav(webmPath) {
     ffmpeg(webmPath)
       .toFormat('wav')
       .audioFrequency(16000)
+      .audioChannels(1)
       .on('end', () => resolve(wavPath))
       .on('error', (err) => reject(err))
       .save(wavPath);
@@ -37,22 +40,34 @@ async function transcribeLocal(audioPath) {
   return runWhisper(wavPath);
 }
 
+let transcriberPromise = null;
+
 async function runWhisper(wavPath) {
-  const w = require('whisper-node');
-  const whisperFn = w.whisper || w.default || w;
-  const segments = await whisperFn(wavPath, {
-    modelName: 'base.en',
-    whisperOptions: {
-      language: 'auto',
-      word_timestamps: false,
-    },
-  });
-  const text = (segments || [])
-    .map((s) => (s && s.speech) || '')
-    .filter(Boolean)
-    .join(' ')
-    .trim();
-  return text || '';
+  const { pipeline } = await import('@xenova/transformers');
+  const { WaveFile } = require('wavefile');
+
+  const buffer = fs.readFileSync(wavPath);
+  const wav = new WaveFile(buffer);
+  wav.toBitDepth('32f');
+  wav.toSampleRate(16000);
+  let audioData = wav.getSamples();
+  if (Array.isArray(audioData)) audioData = audioData[0];
+  if (!(audioData instanceof Float32Array)) {
+    audioData = new Float32Array(audioData);
+  }
+
+  if (!transcriberPromise) {
+    transcriberPromise = pipeline('automatic-speech-recognition', 'Xenova/whisper-medium');
+  }
+  const transcriber = await transcriberPromise;
+  const output = await transcriber(audioData, { language: 'dutch', task: 'transcribe' });
+  const raw = (output && output.text) ? String(output.text).trim() : '';
+  const cleaned = cleanup(raw);
+  if (await isOllamaAvailable()) {
+    const polished = await polishWithOllama(cleaned);
+    if (polished) return polished.trim();
+  }
+  return cleaned;
 }
 
 module.exports = { transcribeLocal, webmToWav };

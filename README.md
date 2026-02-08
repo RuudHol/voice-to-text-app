@@ -1,15 +1,6 @@
 # Voice to Text
 
-Desktop app: spraak opnemen en omzetten naar tekst (lokaal met Whisper).
-
-## Eerste keer
-
-1. **Node.js** moet geïnstalleerd zijn.
-2. **Whisper-model downloaden** (eenmalig):
-   ```bash
-   npx whisper-node download
-   ```
-   Kies bijv. `base.en` (snel) of `small.en`. Op Windows: als het mislukt, installeer [GNU Make](https://gnuwin32.sourceforge.net/packages/make.htm) en probeer opnieuw.
+Desktop app: spraak opnemen en omzetten naar tekst (lokaal).
 
 ## Starten
 
@@ -18,19 +9,22 @@ npm install
 npm run electron:dev
 ```
 
-- Eerst start de dev-server (Vite), daarna opent het Electron-venster.
-- Klik **Start opname**, praat, klik **Stop opname** — de app zet de opname om naar tekst (lokaal).
+Dat is alles. Geen extra installatie of model-download: bij de **eerste transcriptie** wordt het Whisper-model automatisch gedownload (eenmalig, daarna offline). De eerste keer kan dat een minuut duren.
 
-## Wat er al werkt
+- **Start opname** → praat → **Stop opname** → even wachten → transcript verschijnt.
 
-- Opname (microfoon)
-- Opslaan als bestand
-- Transcriptie met Whisper (lokaal, na model-download)
-- Transcript tonen in de app
+## Wat er werkt
+
+- Opname (microfoon), opslaan, transcriptie (lokaal met Whisper), cleanup (filler words + zelfcorrectie), transcript in de app.
+- **Optioneel: lokale LLM-polish** – als [Ollama](https://ollama.com) draait, wordt de transcript daarna door een lokaal model opgeschoond.
+- **Automatisch plakken** – na transcriptie wordt de tekst op het klembord gezet en (als mogelijk) automatisch geplakt in het venster dat dan actief is (bijv. Cursor, Word). Lukt auto-plakken niet, dan staat de tekst op het klembord: plak met Ctrl+V.
+
+## Ollama (voor betere tekst)
+
+1. Installeer [Ollama](https://ollama.com).
+2. Haal een model op: `ollama pull llama3.2` (of `mistral`).
+3. Laat Ollama draaien; de app gebruikt het automatisch als het beschikbaar is.
 
 ## Later (plan)
 
-- Filler words eruit, zelfcorrectie, woordenboek dat leert van correcties
-- Sneltoetsen (houd ingedrukt / toggle) + drijvend opname-schermpje
-- Tekst plakken in het actieve venster (overal)
-- Optioneel: OpenAI Whisper API (cloud)
+- Woordenboek dat leert van correcties, sneltoetsen, drijvend schermpje, tekst overal plakken.

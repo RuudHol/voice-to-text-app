@@ -6,6 +6,7 @@ const os = require('os');
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
 const { transcribeLocal } = require('./transcribe');
+const { pasteIntoActiveWindow } = require('./inject');
 
 ipcMain.handle('save-recording', async (_event, arrayBuffer) => {
   const tempDir = os.tmpdir();
@@ -21,6 +22,18 @@ ipcMain.handle('transcribe', async (_event, audioPath) => {
   } catch (e) {
     return { ok: false, error: e.message || String(e) };
   }
+});
+
+ipcMain.handle('paste-into-active-window', async (_event, text) => {
+  const win = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
+  if (win) {
+    win.hide();
+    await new Promise((r) => setTimeout(r, 400));
+  }
+  const result = pasteIntoActiveWindow(text);
+  await new Promise((r) => setTimeout(r, 200));
+  if (win) win.show();
+  return result;
 });
 
 function createWindow() {

@@ -43,8 +43,14 @@ function App() {
       setStatus('Bezig met omzetten naar tekst…');
       const result = await window.electronAPI.transcribe(audioPath);
       if (result.ok) {
-        setTranscript(result.text || '(geen tekst herkend)');
-        setStatus('Klaar.');
+        const text = result.text || '(geen tekst herkend)';
+        setTranscript(text);
+        if (text && text !== '(geen tekst herkend)') {
+          const pasteResult = await window.electronAPI.pasteIntoActiveWindow(text);
+          setStatus(pasteResult.pasted ? 'Klaar. Tekst geplakt in je document.' : 'Klaar. Tekst gekopieerd — plak met Ctrl+V.');
+        } else {
+          setStatus('Klaar.');
+        }
       } else {
         setError(result.error || 'Transcriptie mislukt.');
         setStatus('');
